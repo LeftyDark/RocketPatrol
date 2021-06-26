@@ -45,15 +45,48 @@ class Play extends Phaser.Scene {
         this.anims.create({key: 'explode', 
     frames: this.anims.generateFrameNumbers('explosion', {start: 0, end: 9, first: 0}), 
     frameRate: 30});
-        
+
+    this.p1Score = 0;
+
+    let scoreConfig = {
+        fontFamily: 'Courier',
+        fontSize: '28px',
+        backgroundColor: '#F3B141',
+        color: '#843605',
+        align: 'right',
+        padding: {
+            top: 5, bottom: 5
+        },
+        fixedwidth: 100
     }
+    this.scoreLeft = this.add.text(borderUISize +borderPadding,
+        borderUISize + borderPadding*2, this.p1Score, scoreConfig);
+    //score
+
+    this.gameOver = false;
+
+    //60 second play clock
+    scoreConfig.fixedwidth = 0;
+    this.clock = this.time.delayedCall(60000, () => {
+        this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER',
+        scoreConfig).setOrigin(0.5);
+        this.add.text(game.config.width/2, game.config.height/2 +64, 'Press (R) to Restart', 
+        scoreConfig).setOrigin(0.5);
+        this.gameOver = true;
+    }, null, this);
+     }    
+    
     update() {
+        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
+            this.scene.restart();
+        } 
         this.starfield.tilePositionX -=  4;
+        if(!this.gameOver) {
         this.p1Rocket.update();
         this.ship01.update();
         this.ship02.update();
         this.ship03.update();
-
+        }
         // check for any collisions
         if(this.checkCollision(this.p1Rocket, this.ship03)) {
             console.log("Press F for ship 3")
@@ -90,5 +123,8 @@ class Play extends Phaser.Scene {
             ship.alpha = 1;
             boom.destroy();
         });
+        //add score and show new score
+        this.p1Score += ship.points;
+        this.scoreLeft.text = this.p1Score;
     }  
 }
